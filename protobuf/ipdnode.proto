@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package protobuf;
+
+// Interface exported by the server.
+service IPDNode {
+
+	// GameStream streams a single game in both directions
+	rpc GameStream(stream MoveMessage) returns (stream MoveMessage) {}
+
+}
+
+message MoveMessage {
+	string gameID = 1;
+    enum Move {
+        NULL = 0;
+        START = 1;
+        COOPERATE = 2;
+        DEFECT = 3;
+        QUIT = 4;
+    }
+    Move move = 2;
+}
