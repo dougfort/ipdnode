@@ -8,6 +8,8 @@ import (
 	"syscall"
 
 	"google.golang.org/grpc"
+
+	pb "github.com/dougfort/ipdnode/protobuf"
 )
 
 func main() {
@@ -30,6 +32,8 @@ func run() int {
 	}
 
 	grpcServer = grpc.NewServer()
+
+	pb.RegisterIPDNodeServer(grpcServer, NewServer())
 
 	go func() {
 		log.Printf("Server starts: listening on %s", serverAddress)
