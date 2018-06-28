@@ -17,8 +17,7 @@ func main() {
 }
 
 func run() int {
-	const serverAddress = "localhost:1111"
-
+	var cfg ConfigType
 	var listener net.Listener
 	var grpcServer *grpc.Server
 	var err error
@@ -26,7 +25,12 @@ func run() int {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	if listener, err = net.Listen("tcp", serverAddress); err != nil {
+	if cfg, err = loadConfig(); err != nil {
+		log.Printf("loadConfig failed: %v", err)
+		return 1
+	}
+
+	if listener, err = net.Listen("tcp", cfg.ListenAddress); err != nil {
 		log.Printf("net.Listen failled: %v", err)
 		return 1
 	}
@@ -36,7 +40,7 @@ func run() int {
 	pb.RegisterIPDNodeServer(grpcServer, NewServer())
 
 	go func() {
-		log.Printf("Server starts: listening on %s", serverAddress)
+		log.Printf("Server starts: listening on %s", cfg.ListenAddress)
 		if err := grpcServer.Serve(listener); err != nil {
 			log.Printf("grpcServer.Serve ended with %s", err)
 		}
