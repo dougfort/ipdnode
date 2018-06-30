@@ -20,7 +20,7 @@ func loadConfig() (ConfigType, error) {
 	flag.StringVar(&config.ListenAddress, "listen", "",
 		"address for the server to listen to")
 	flag.StringVar(&dialAddresses, "dial", "",
-		"colon separated list of addresses for client(s) to dial")
+		"| separated list of addresses for client(s) to dial")
 
 	flag.Parse()
 
@@ -32,7 +32,7 @@ func loadConfig() (ConfigType, error) {
 		return ConfigType{}, errors.Errorf("You must specify a colong separated list of dial addresses with --dial")
 	}
 
-	config.DialAddresses = strings.Split(dialAddresses, ":")
+	config.DialAddresses = strings.Split(dialAddresses, "|")
 
 	return config, nil
 }
