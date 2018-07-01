@@ -18,6 +18,7 @@ func NewServer() pb.IPDNodeServer {
 
 // GameStream is the method of pb.IPDNodeServer
 func (s *serverState) GameStream(streamServer pb.IPDNode_GameStreamServer) error {
+	const moveCount = 10
 	var message *pb.MoveMessage
 	var gameID string
 	var err error
@@ -35,7 +36,33 @@ func (s *serverState) GameStream(streamServer pb.IPDNode_GameStreamServer) error
 		return errors.Errorf("invalid empty gameID")
 	}
 
-	log.Printf("%s: GameStream starts", gameID)
-	return nil
+	log.Printf("Game: %s: GameStream starts game: %d moves", gameID, moveCount)
+	for i := 0; i < moveCount; i++ {
+		var theirMove *pb.MoveMessage
 
+		ourMove := pb.MoveMessage{GameID: gameID, Move: randomMove()}
+
+		// send our move to the client
+		if err = streamServer.Send(&ourMove); err != nil {
+			return errors.Wrapf(err, "Game: %s, Iteration: %d: Send", gameID, i)
+		}
+
+		if theirMove, err = streamServer.Recv(); err != nil {
+			return errors.Wrapf(err, "Game: %s, Iteration: %d: Recv", gameID, i)
+		}
+
+		if theirMove.Move != pb.MoveMessage_COOPERATE && theirMove.Move != pb.MoveMessage_DEFECT {
+			return errors.Wrapf(err, "Game: %s: Iteration: %d: Unknown Move: %d",
+				gameID, i, theirMove.Move)
+		}
+
+		log.Printf("Game: %s; I: %d; Our Move: %s, Their Move: %s",
+			gameID,
+			i,
+			pb.MoveMessage_Move_name[int32(ourMove.Move)],
+			pb.MoveMessage_Move_name[int32(theirMove.Move)],
+		)
+	}
+
+	return nil
 }
